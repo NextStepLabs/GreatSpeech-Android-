@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "152986930229",
+    "firebase_url": "https://greatspeech-2a82e.firebaseio.com",
+    "project_id": "greatspeech-2a82e",
+    "storage_bucket": "greatspeech-2a82e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:152986930229:android:9ad940e7e06d06c3",
+        "android_client_info": {
+          "package_name": "com.example.yelnur.greatspeech"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "152986930229-pbevb9g3ooues41nnq03v2jgqkvt08qf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKufnEryVoIVk8ABeN7O3B0htfTZHroyE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
