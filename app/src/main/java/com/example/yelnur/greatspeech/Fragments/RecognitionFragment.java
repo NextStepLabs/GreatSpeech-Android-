@@ -27,8 +27,11 @@ import android.widget.TextView;
 
 import com.example.yelnur.greatspeech.Function;
 import com.example.yelnur.greatspeech.R;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,6 +64,8 @@ public class RecognitionFragment extends Fragment implements RecognitionListener
     final ArrayList<String> ct_list = new ArrayList<String>();
     final ArrayList<String> qt_list = new ArrayList<String>();
 
+
+
     public RecognitionFragment() {
         // Required empty public constructor
     }
@@ -80,13 +85,13 @@ public class RecognitionFragment extends Fragment implements RecognitionListener
         category_list = (ListView) view.findViewById(R.id.category_list);
 
         String[] categories = new String[] {"Образования", "Бизнес"};
-        final String[] q1 = new String[] {"Как вам образование нашей страны?", "Нравится ли вам методы обечения?", "Как вы учились?"};
+        final String[] q1 = new String[] {"Как вам образование нашей страны?", "Нравится ли вам методы обучения?", "Как вы учились?"};
         final String[] q2 = new String[] {"Какая сфера бизнеса вас интересует?", "На какие мастер-классы вы ходите?", "Можете рассказать о каком-то бизнес тренере?"};
 
 
 
         for (int i = 0; i < categories.length; i++){
-            ct_list.add(categories[i]);
+            ct_list.add(i + 1 + "." + categories[i]);
         }
         final ArrayAdapter ct_adapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, ct_list);
         category_list.setAdapter(ct_adapter);
@@ -100,12 +105,12 @@ public class RecognitionFragment extends Fragment implements RecognitionListener
                 switch (position){
                     case 0:
                         for (int i = 0; i < q1.length; i++){
-                            qt_list.add(q1[i]);
+                            qt_list.add(i + 1 + "." + q1[i]);
                         }
                         break;
                     case 1:
                         for (int i = 0; i < q2.length; i++){
-                            qt_list.add(q2[i]);
+                            qt_list.add(i + 1 + "." + q2[i]);
                         }
                         break;
                 }
@@ -173,6 +178,7 @@ public class RecognitionFragment extends Fragment implements RecognitionListener
                     question_list.getChildAt(cnt - 1).setBackgroundColor(Color.TRANSPARENT);
                 }
                 cnt++;
+                recordbtn.setText("Ответить" + "(" + cnt + ")");
                 recordbtn.setEnabled(false);
 
                 /*To stop listening
@@ -195,10 +201,6 @@ public class RecognitionFragment extends Fragment implements RecognitionListener
     @Override
     public void onPause() {
         super.onPause();
-        /*if (speech != null) {
-            speech.destroy();
-            Log.d("Log", "destroy");
-        }*/
     }
 
     @Override
@@ -249,13 +251,13 @@ public class RecognitionFragment extends Fragment implements RecognitionListener
         }else {
             allSpeech += " " + text;
         }
-        rootRef.push().setValue(text.toLowerCase());
+        rootRef.child("user_filler").push().setValue(text.toLowerCase());
 
         if (cnt == 3){
             recordbtn.setEnabled(false);
             Log.d("AllSpeech", allSpeech);
             String[] splitAllSpeech = allSpeech.split(" ");
-            Map<String, Integer> wordCount = new HashMap<>();
+            final Map<String, Integer> wordCount = new HashMap<>();
             for (String word: splitAllSpeech){
                 if (wordCount.containsKey(word)){
                     wordCount.put(word, wordCount.get(word) + 1);
@@ -264,34 +266,59 @@ public class RecognitionFragment extends Fragment implements RecognitionListener
                 }
             }
 
-            String filler = "";
-            int sum = 0;
-            for (Map.Entry<String, Integer> entry: wordCount.entrySet()){
-                Log.d("Counts","Count of: " + entry.getKey() + " in sentence = " + entry.getValue());
-                sum += entry.getValue();
-                if (filler == "" && entry.getValue() >= 3){
-                    filler += entry.getKey();
-                }else if (filler != "" && entry.getValue() >= 3){
-                    filler += ", " + entry.getKey();
-                }
-            }
-
-            //for()
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Общее количество слов: " + String.valueOf(sum) + "\n" +
-                    "Слова паразиты: " + filler).setCancelable(false).setPositiveButton("Хорошо, я исправлю!", new DialogInterface.OnClickListener() {
+            rootRef.child("popular_filler").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    category.setVisibility(View.VISIBLE);
-                    recognition.setVisibility(View.INVISIBLE);
-                    qt_list.clear();
-                    returnedText.setText("");
-                    cnt = 0;
-                    recordbtn.setEnabled(true);
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    String def_fill = "";
+                    String filler = "";
+                    int sum = 0;
+                    def_fill = dataSnapshot.getValue(String.class);
+                    Log.d("default_filler", def_fill);
+                    String[] splitDefFill = def_fill.split(",");
+                    for (int i = 0; i < splitDefFill.length; i++){
+                        Log.d("splitDefFill", splitDefFill[i]);
+                    }
+
+                    for (Map.Entry<String, Integer> entry: wordCount.entrySet()){
+                        Log.d("Counts","Count of: " + entry.getKey() + " in sentence = " + entry.getValue());
+                        sum += entry.getValue();
+                        for (int i = 0; i < splitDefFill.length; i++){
+                            if (filler == "" && entry.getValue() >= 3 && splitDefFill[i].equals(entry.getKey())){
+                                filler += entry.getKey();
+                            }else if (filler != "" && entry.getValue() >= 3 && splitDefFill[i].equals(entry.getKey())){
+                                filler += ", " + entry.getKey();
+                            }
+                        }
+
+                    }
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setMessage("Общее количество слов: " + String.valueOf(sum) + "\n" +
+                            "Слова паразиты: " + filler).setCancelable(false).setPositiveButton("Подробнее", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            category.setVisibility(View.VISIBLE);
+                            recognition.setVisibility(View.INVISIBLE);
+                            qt_list.clear();
+                            returnedText.setText("");
+                            cnt = 0;
+
+                            recordbtn.setText("Ответить");
+                            recordbtn.setEnabled(true);
+                        }
+                    });
+
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+                    allSpeech = "";
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.d("DatabaseError", databaseError.toString());
                 }
             });
-            AlertDialog alertDialog = builder.create();
-            alertDialog.show();
+
 
         }
 
@@ -304,13 +331,7 @@ public class RecognitionFragment extends Fragment implements RecognitionListener
 
         ArrayList<String> matches = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
         String text = "";
-        /* To get all close matchs
-        for (String result : matches)
-        {
-            text += result + "\n";
-        }
-        */
-        text = matches.get(0); //  Remove this line while uncommenting above codes
+        text = matches.get(0);
         returnedText.setText(text);
 
     }

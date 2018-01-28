@@ -52,23 +52,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
             <ProgressBar
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="50dp"
                 android:id="@+id/progressBar1"
                 android:layout_gravity="center_horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
-
-            <Button
-                android:layout_marginTop="15dp"
-                android:id="@+id/mainButton"
-                android:layout_width="150dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center_horizontal"
-                android:scaleType="fitXY"
-                android:text="Начать"
-                android:textAllCaps="false"
-                android:background="@android:color/holo_green_light"
-                />
 
             <TextView
                 android:id="@+id/textView1"
@@ -77,8 +65,24 @@
                 android:padding="15dp"
                 android:textSize="26sp"
                 android:textStyle="normal"
-                android:textColor="#341A2C"/>
+                android:textColor="#341A2C"
+                android:gravity="center_horizontal"
+                />
+
+            <Button
+                android:layout_marginTop="140dp"
+                android:id="@+id/mainButton"
+                android:layout_width="150dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center_horizontal"
+                android:scaleType="fitXY"
+                android:text="Ответить"
+                android:textAllCaps="false"
+                android:background="@android:color/holo_green_light"
+                />
+
         </LinearLayout>
+
     </RelativeLayout>
 
 </FrameLayout>
