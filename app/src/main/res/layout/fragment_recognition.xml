@@ -15,7 +15,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="?android:attr/actionBarSize"
-                android:text="О чем будем говорить?"
+                android:text="Выберите тему для речи"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:gravity="center"
